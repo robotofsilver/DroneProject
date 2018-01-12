@@ -1,0 +1,80 @@
+#include <dht.h>
+#include <LiquidCrystal.h>
+
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+byte customChar[8] = {
+  0b00000,
+  0b00000,
+  0b01010,
+  0b01010,
+  0b00000,
+  0b00000,
+  0b10001,
+  0b01110
+};
+
+#define trigger_pin 10
+#define echo_pin 13
+#define DHT11_PIN 7
+
+dht DHT;
+
+void setup() {
+  Serial.begin (9600);
+  pinMode(trigger_pin, OUTPUT);
+  pinMode(echo_pin, INPUT);
+  lcd.begin(16, 2);
+  lcd.print("Display is here!");
+  delay(2000);
+  lcd.createChar(0, customChar);
+  lcd.setCursor(8, 1);
+  lcd.write((uint8_t)0);
+
+  for (int current_smile = 8; current_smile > -1; current_smile--)
+  {
+    lcd.setCursor(current_smile, 1);
+    lcd.write((uint8_t)0);
+    lcd.setCursor( (16 - current_smile), 1);
+    lcd.write((uint8_t)0);
+    delay(100);
+  }
+  delay(1000);
+
+}
+
+void loop() {
+  
+  float duration;
+  float distance;
+  float speed;
+  
+  digitalWrite(trigger_pin, LOW); 
+  delayMicroseconds(2);
+  digitalWrite(trigger_pin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_pin, LOW);
+  
+  duration = pulseIn(echo_pin, HIGH);
+  distance = (duration / 2) * ( (331.4 + (0.606 * DHT.temperature) + (0.0124 * DHT.humidity)) / 10000);
+  //formula to determine the distance, using humidity and temperature
+
+
+  lcd.clear();
+  if (distance > 150 || distance <= 2)
+  {
+    lcd.begin(16, 2);
+    Serial.println("Bad distance");
+    lcd.print("Bad distance!!");
+
+  }
+  else 
+  {
+    lcd.begin(16, 2);
+    Serial.println((String)distance + " cm");
+    lcd.print((String)distance + " cm");
+
+  }
+  delay(1000);
+}
+
